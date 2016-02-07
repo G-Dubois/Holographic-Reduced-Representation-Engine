@@ -4,26 +4,31 @@
 
 #include <iostream>
 #include <vector>
-#include <hrr.h>
+#include "hrrengine.h"
 
 using namespace std;
 
 int main (int argc, char** argv) {
 
 	int size;
-	vector<float> myVec;
+	HRR myVec;
+	HRR myVec2;
 
-	cout << "What size vector do you want to create? ";
+	cout << "What size vectors do you want to create? ";
 	cin >> size;
 
-	myVec.resize(size);
-
 	HRREngine engine;
-	engine.generateHRR(myVec&);
+	myVec = engine.generateHRR(size);
 
-	for (int i = 0; i < myVec.size(); i++) {
-		cout << "|" << myVec[i] << "|\n";
-	}
+	HRR hrr1(size);
+	HRR hrr2(size);
+
+	engine.getUserDefinedHRR(hrr1);
+	engine.getUserDefinedHRR(hrr2);
+
+	myVec = engine.convolveHRRs(hrr1, hrr2);
+
+	engine.printHRR(myVec);
 
 	return 0;
 }

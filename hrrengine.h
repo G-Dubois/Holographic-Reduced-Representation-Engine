@@ -3,13 +3,24 @@
 //  Author:		Grayson M. Dubois
 //  Mentor:		Dr. Joshua Phillips
 
+#include <vector>
+
+using namespace std;
+
+typedef vector<float> HRR;
+
 class HRREngine {
-
-private:
-	
-
 public:
 	// Generates an hrr representation for the given vector
-	void generateRepresentation(Vector<float>&);
+	HRR generateHRR(int size);
 
-}
+	// Forms a complex concept by performing circular convolution on two hrrs
+	HRR convolveHRRs(HRR hrr1, HRR hrr2);
+
+	// Output contents of hrr
+	void printHRR(HRR hrr);
+
+	// Get user-defined values for an hrr
+	void getUserDefinedHRR(HRR& hrr);
+	
+};
