@@ -12,14 +12,14 @@
 using namespace std;
 
 // Generates an hrr representation for the given vector
-HRR HRREngine::generateHRR(int size) {
-	HRR myVec(size);
+HRR HRREngine::generateHRR() {
+	HRR myVec( getVectorSize() );
 
 	random_device rd;
 	mt19937 e2(rd());
 
 	float mean = 0.0;
-	float stdDev = 1.0 / sqrt(float(size));
+	float stdDev = 1.0 / sqrt(float( getVectorSize() ));
 
 	normal_distribution<float> dist(mean, stdDev);
 
@@ -31,10 +31,17 @@ HRR HRREngine::generateHRR(int size) {
 }
 
 // Outputs the contents of an hrr
-void HRREngine::printHRR(HRR hrr) {
+void HRREngine::printHRRVertical(HRR hrr) {
 	for (int i = 0; i < hrr.size(); i++) {
 		cout << "|" << hrr[i] << "|\n";
 	}
+}
+void HRREngine::printHRRHorizontal(HRR hrr){
+	cout << "[ ";
+	for (float value: hrr){
+		cout << value << " , ";
+	}
+	cout << "]";
 }
 
 // Forms a complex concept by performing circular convolution on two hrrs
@@ -57,9 +64,9 @@ HRR HRREngine::convolveHRRs(HRR hrr1, HRR hrr2) {
 		
 		
 		cout << "hrr1:\n";
-		printHRR(hrr1);
+		printHRRHorizontal(hrr1);
 		cout << "hrr2:\n";
-		printHRR(hrr2);
+		printHRRHorizontal(hrr2);
 		cout << "\nOuter product of hrr1 and hrr 2 ";
 		for (int i = 0; i < hrr1.size(); i ++){
 			cout << "\n| ";
@@ -96,5 +103,39 @@ void HRREngine::getUserDefinedHRR(HRR& hrr){
 	for (int i = 0; i < hrr.size() ; i++){
 		cin >> hrr[i];
 	}
+	
+}
+
+
+// Method takes a vector of strings an encodes them, assigning them an hrr and storing them in concept memory
+void HRREngine::encodeConcepts(vector<string> concepts){
+
+	// Sort concepts by alphabetical order
+	//concepts.sort();
+
+	for (string concept : concepts){
+		HRR newHrr = generateHRR();
+		conceptMemory.insert( pair<string, HRR>( concept, newHrr) );
+	}
+
+}
+
+// Returns the general length of the vector
+int HRREngine::getVectorSize(){
+	return vectorSize;
+}
+
+// Sets the general length of the vector
+void HRREngine::setVectorSize(int size){
+	vectorSize = size;
+}
+
+// Default constructor. Sets vector size to 128
+HRREngine::HRREngine(){
+	vectorSize = 128;
+}
+
+// Method lists the map of all concepts. Use only for debugging with small vectors.
+void listAllConcepts(){
 	
 }
