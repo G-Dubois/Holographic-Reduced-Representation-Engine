@@ -7,6 +7,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <iomanip>
 #include "hrrengine.h"
 
 using namespace std;
@@ -33,15 +34,16 @@ HRR HRREngine::generateHRR() {
 // Outputs the contents of an hrr
 void HRREngine::printHRRVertical(HRR hrr) {
 	for (int i = 0; i < hrr.size(); i++) {
-		cout << "|" << hrr[i] << "|\n";
+		cout << "| " << setprecision(9) << setw(12) << hrr[i] << " |\n";
 	}
 }
 void HRREngine::printHRRHorizontal(HRR hrr){
 	cout << "[ ";
-	for (float value: hrr){
-		cout << value << " , ";
+	for (int i = 0; i < hrr.size() - 1; i++){
+		cout << setprecision(9) << setw(12) << fixed;
+		cout << hrr[i] << " , ";
 	}
-	cout << "]";
+	cout << setprecision(9) << setw(12) << fixed << hrr[hrr.size() - 1] << setw(3) << " ]";
 }
 
 // Forms a complex concept by performing circular convolution on two hrrs
@@ -136,6 +138,11 @@ HRREngine::HRREngine(){
 }
 
 // Method lists the map of all concepts. Use only for debugging with small vectors.
-void listAllConcepts(){
-	
+void HRREngine::listAllConcepts(){
+	// Iterate through the concept map
+	for (map<string, HRR>::iterator iter = conceptMemory.begin(); iter != conceptMemory.end(); iter++) {
+		cout << iter->first << "\t";
+		printHRRHorizontal(iter->second);
+		cout << "\n";
+	}
 }

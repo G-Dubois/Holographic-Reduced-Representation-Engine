@@ -1,3 +1,7 @@
 red
 soft
 ball
+frisbee
+smelly
+bright
+bucket

@@ -47,6 +47,8 @@ int main (int argc, char** argv) {
 
 	}
 
+	engine.listAllConcepts();
+
 	/*
 	HRR hrr1(size);
 	HRR hrr2(size);
@@ -57,7 +59,7 @@ int main (int argc, char** argv) {
 	myVec = engine.convolveHRRs(hrr1, hrr2);
 	*/
 
-	//engine.printHRR(myVec);
+	//engine.printHRRVertical(myVec);
 
 	return 0;
 }
