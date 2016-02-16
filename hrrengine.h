@@ -1,7 +1,7 @@
 //  Program:		Holographic Reduced Representation Engine Specification
 //  Filename:		hrrengine.h
-//  Author:		Grayson M. Dubois
-//  Mentor:		Dr. Joshua Phillips
+//  Author:			Grayson M. Dubois
+//  Mentor:			Dr. Joshua Phillips
 
 #include <map>
 #include <vector>
@@ -12,10 +12,20 @@ typedef vector<float> HRR;
 
 class HRREngine {
 private:
+	
+	// Map stores all concepts as string name and HRR
 	map<string, HRR> conceptMemory;
+
+	// Integer indicates the size of vectors used in this engine
 	int vectorSize;
 
+	// Helper method invertVector calculates the approximate inversion of an HRR
+	//HRR invertVector(HRR hrr);
+
 public:
+
+	// Helper method invertVector calculates the approximate inversion of an HRR
+	HRR invertVector(HRR hrr);
 
 	// Default constructor
 	HRREngine();
@@ -32,6 +42,9 @@ public:
 
 	// Forms a complex concept by performing circular convolution on two hrrs
 	HRR convolveHRRs(HRR hrr1, HRR hrr2);
+
+	// Perform a circular correlation (involution) operation
+	HRR correlateHRRs(HRR complexHRR, HRR hrr);
 
 	// Output contents of hrr
 	void printHRRVertical(HRR hrr);

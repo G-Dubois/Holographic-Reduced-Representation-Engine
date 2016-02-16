@@ -1,13 +1,14 @@
 //  Program:		Holographic Reduced Representation Engine Implementation
 //  Filename:		hrrengine.cpp
-//  Author:		Grayson M. Dubois
-//  Mentor:		Dr. Joshua L. Phillips
+//  Author:			Grayson M. Dubois
+//  Mentor:			Dr. Joshua L. Phillips
 
 #include <random>
 #include <vector>
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 #include "hrrengine.h"
 
 using namespace std;
@@ -57,17 +58,15 @@ HRR HRREngine::convolveHRRs(HRR hrr1, HRR hrr2) {
 
 		// Form the outer product of hrr1 and hrr2
 		vector<vector<float>> outerProduct(hrr1.size());
-		cout << "outerProduct.size() == " << outerProduct.size() << '\n';
 		for (int i = 0; i < outerProduct.size(); i++){
 			vector<float> newVector(hrr2.size());
-			cout << "newVector.size() == " << newVector.size() << '\n';
 			outerProduct[i] = newVector;
 		}
 		
 		
 		cout << "hrr1:\n";
 		printHRRHorizontal(hrr1);
-		cout << "hrr2:\n";
+		cout << "\nhrr2:\n";
 		printHRRHorizontal(hrr2);
 		cout << "\nOuter product of hrr1 and hrr 2 ";
 		for (int i = 0; i < hrr1.size(); i ++){
@@ -97,6 +96,20 @@ HRR HRREngine::convolveHRRs(HRR hrr1, HRR hrr2) {
 	return newConcept;
 }
 
+// Perform a circular correlation (involution) operation
+HRR HRREngine::correlateHRRs(HRR complexHRR, HRR hrr) {
+	HRR newConcept(vectorSize);
+
+	// Calculate the approximate inverse of the vector
+	hrr = invertVector(hrr);
+
+	// Perform involution operation by convolving the complex HRR with the inverted HRR
+	newConcept = convolveHRRs(complexHRR, hrr);
+
+	return newConcept;
+}
+
+
 // Get user-defined values for an hrr
 void HRREngine::getUserDefinedHRR(HRR& hrr){
 
@@ -113,7 +126,7 @@ void HRREngine::getUserDefinedHRR(HRR& hrr){
 void HRREngine::encodeConcepts(vector<string> concepts){
 
 	// Sort concepts by alphabetical order
-	//concepts.sort();
+	sort(concepts.begin(), concepts.end());
 
 	for (string concept : concepts){
 		HRR newHrr = generateHRR();
@@ -145,4 +158,17 @@ void HRREngine::listAllConcepts(){
 		printHRRHorizontal(iter->second);
 		cout << "\n";
 	}
+}
+
+// Private helper method invertVector calculates approximate inversion of an HRR
+HRR HRREngine::invertVector(HRR hrr) {
+	HRR invertedVector(vectorSize);
+
+	invertedVector[0] = hrr[0];
+
+	for (int i = 1; i < vectorSize; i++) {
+		invertedVector[i] = hrr[vectorSize - i];
+	}
+
+	return invertedVector;
 }

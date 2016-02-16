@@ -1,6 +1,7 @@
-//
-// Created by Grayson on 2/1/2016.
-//
+//  Program:		Holographic Reduced Representation Engine Implementation
+//  Filename:		main.cpp
+//  Author:			Grayson M. Dubois
+//  Mentor:			Dr. Joshua L. Phillips
 
 #include <fstream>
 #include <iostream>
@@ -13,7 +14,7 @@ int main (int argc, char** argv) {
 
 	// Declare variables
 	int size;
-	//HRR myVec;
+	HRR myVec;
 	//HRR myVec2;
 	ifstream fin;
 	vector<string> concepts = {};
@@ -49,17 +50,24 @@ int main (int argc, char** argv) {
 
 	engine.listAllConcepts();
 
-	/*
+	
 	HRR hrr1(size);
 	HRR hrr2(size);
 
 	engine.getUserDefinedHRR(hrr1);
 	engine.getUserDefinedHRR(hrr2);
 
-	myVec = engine.convolveHRRs(hrr1, hrr2);
-	*/
+	HRR hrr3(size);
 
-	//engine.printHRRVertical(myVec);
+	myVec = engine.convolveHRRs(hrr1, hrr2);
+
+	engine.printHRRVertical(myVec);
+
+	cout << "\n\n";
+
+	myVec = engine.correlateHRRS();
+
+	engine.printHRRVertical(myVec);
 
 	return 0;
 }
