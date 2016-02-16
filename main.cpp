@@ -54,8 +54,11 @@ int main (int argc, char** argv) {
 	HRR hrr1(size);
 	HRR hrr2(size);
 
-	engine.getUserDefinedHRR(hrr1);
-	engine.getUserDefinedHRR(hrr2);
+	//engine.getUserDefinedHRR(hrr1);
+	//engine.getUserDefinedHRR(hrr2);
+
+	hrr1 = engine.generateHRR();
+	hrr2 = engine.generateHRR();
 
 	HRR hrr3(size);
 
@@ -65,9 +68,9 @@ int main (int argc, char** argv) {
 
 	cout << "\n\n";
 
-	myVec = engine.correlateHRRS();
+	hrr3 = engine.correlateHRRs(myVec, hrr2);
 
-	engine.printHRRVertical(myVec);
+	engine.printHRRVertical(hrr3);
 
 	return 0;
 }

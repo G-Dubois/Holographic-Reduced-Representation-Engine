@@ -36,7 +36,6 @@ public:
 	// Sets the general vectors length
 	void setVectorSize(int size);
 
-
 	// Generates an hrr representation for the given vector
 	HRR generateHRR();
 

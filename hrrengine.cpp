@@ -99,12 +99,13 @@ HRR HRREngine::convolveHRRs(HRR hrr1, HRR hrr2) {
 // Perform a circular correlation (involution) operation
 HRR HRREngine::correlateHRRs(HRR complexHRR, HRR hrr) {
 	HRR newConcept(vectorSize);
+	HRR invertedVector(vectorSize);
 
 	// Calculate the approximate inverse of the vector
-	hrr = invertVector(hrr);
+	invertedVector = invertVector(hrr);
 
 	// Perform involution operation by convolving the complex HRR with the inverted HRR
-	newConcept = convolveHRRs(complexHRR, hrr);
+	newConcept = convolveHRRs(invertedVector, complexHRR);
 
 	return newConcept;
 }
