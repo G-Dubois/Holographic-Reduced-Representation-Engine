@@ -42,6 +42,9 @@ public:
 	// Combines two concepts to form a complex concept
 	string combineConcepts(string concept1, string concept2);
 
+	// Extract a base concept from a complex concept and the former's complementary base concept
+	string extractConcept(string complexConcept, string baseConcept);
+
 	// Forms a complex concept by performing circular convolution on two hrrs
 	HRR convolveHRRs(HRR hrr1, HRR hrr2);
 

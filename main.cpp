@@ -45,14 +45,14 @@ int main (int argc, char** argv) {
 				cout << "Please enter name of concept to search for: ";
 				cin >> name;
 				hrr = engine.query(name);
-				engine.printHRRHorizontal(hrr);
+				//engine.printHRRHorizontal(hrr);
 				break;
 			case '2':
 				cout << "Please enter name of concept to search for by representation: ";
 				cin >> name;
 				hrr = engine.query(name);
-				cout << "Representation: ";
-				engine.printHRRHorizontal(hrr);
+				//cout << "Representation: ";
+				//engine.printHRRHorizontal(hrr);
 				cout << "\nRepresentation is most like: ";
 				cout << engine.query(hrr) << "\n\n";
 				break;
@@ -83,6 +83,14 @@ int main (int argc, char** argv) {
 				cout << "The new concept is: " << name << "\n";
 				break;
 			case '5':
+				// Get the names of the two vectors to correlate
+				cout << "Input the complex concept: ";
+				cin >> name;
+				cout << "Input the base concept: ";
+				cin >> name2;
+
+				name = engine.extractConcept(name, name2);
+				cout << "The concept that is most similar to the extracted concept is: " << name << "\n";
 				break;
 			case '6':
 				engine.listAllConcepts();
@@ -90,14 +98,15 @@ int main (int argc, char** argv) {
 			case '7':
 				engine.listAllConceptNames();
 				break;
-			case '8':
+			case '0':
 				break;
 			default:
 				cout << "ERROR: Incorrect option entered\n";
 				break;
 		}
+		cout << "\n";
 
-	}while (!(option == '8'));
+	}while (!(option == '0'));
 
 	return 0;
 }
@@ -113,6 +122,6 @@ void printMenu(){
 		 << "\t5 - Correlate two concepts\n"
 		 << "\t6 - Print all known concepts\n"
 		 << "\t7 - Print concepts names\n"
-		 << "\t8 - Quit\n"
+		 << "\t0 - Quit\n"
 		 << "INPUT: ";
 }

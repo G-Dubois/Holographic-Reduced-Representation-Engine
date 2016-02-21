@@ -80,7 +80,7 @@ string HRREngine::combineConcepts(string concept1, string concept2){
 	}
 
 	// Enter the new concept into concept memory
-	query(name);
+	conceptMemory.insert(pair<string, HRR>(name, newHrr));
 
 	return name;
 }
@@ -132,6 +132,21 @@ HRR HRREngine::convolveHRRs(HRR hrr1, HRR hrr2) {
 	}
 
 	return newConcept;
+}
+
+// Extract a base concept from a complex concept and the former's complementary base concept
+string HRREngine::extractConcept(string complexConcept, string baseConcept) {
+	string extractedConcept;
+	HRR extractedHrr;
+
+	HRR complexHrr = query(complexConcept);
+	HRR baseHrr = query(baseConcept);
+
+	extractedHrr = correlateHRRs(complexHrr, baseHrr);
+
+	extractedConcept = query(extractedHrr);
+
+	return extractedConcept;
 }
 
 // Perform a circular correlation (involution) operation
@@ -244,7 +259,7 @@ HRR HRREngine::query(string name){
 	// Sequentially convolve each concept into a complex one
 	HRR newHRR = findHRRByName(strings[0]);
 	for (int i = 1; i < strings.size(); i++){
-		convolveHRRs(newHRR, findHRRByName(strings[i]));
+		newHRR = convolveHRRs(newHRR, findHRRByName(strings[i]));
 	}
 
 	name = "";
