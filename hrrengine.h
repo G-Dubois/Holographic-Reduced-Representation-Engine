@@ -12,7 +12,7 @@ typedef vector<float> HRR;
 
 class HRREngine {
 private:
-	
+
 	// Map stores all concepts as string name and HRR
 	map<string, HRR> conceptMemory;
 
@@ -20,12 +20,15 @@ private:
 	int vectorSize;
 
 	// Helper method invertVector calculates the approximate inversion of an HRR
-	//HRR invertVector(HRR hrr);
+	HRR invertVector(HRR hrr);
+
+	// Calculate the dot product of two HRRs
+	float dot(HRR hrr1, HRR hrr2);
+
+	// Explode a string using '*' as a delimiter
+	vector<string> explode(string str);
 
 public:
-
-	// Helper method invertVector calculates the approximate inversion of an HRR
-	HRR invertVector(HRR hrr);
 
 	// Default constructor
 	HRREngine();
@@ -86,10 +89,4 @@ public:
 
 	// Compare two HRRs by taking their dot product and checking to see if the result is above a threshold
 	bool compare(HRR hrr1, HRR hrr2);
-
-	// Calculate the dot product of two HRRs
-	float dot(HRR hrr1, HRR hrr2);
-
-	// Explode a string using '*' as a delimiter
-	vector<string> explode(string str);
 };
