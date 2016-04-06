@@ -67,6 +67,10 @@ public:
 	// Method takes a vector of strings and encodes them, assigning them an hrr and storing them in concept memory
 	void encodeConcepts(vector<string> concepts);
 
+	// Method constructs a concept and all of its constituent concepts using a tree-like recursive algorithm
+	HRR constructConcept(vector<string> concepts);
+
+
 	/**
 	 *  Method query() is a critical method for the engine
 	 *		query() is overloaded to perform two functions, depending on its usage:
