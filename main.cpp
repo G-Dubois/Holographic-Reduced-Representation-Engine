@@ -25,6 +25,8 @@ int main (int argc, char** argv) {
 	string filename;
 	HRR hrr;
 	HRR hrr2;
+	vector<string> unpackedConceptStrings = {};
+	vector<HRR> unpackedConceptHrrs = {};
 
 	// Initiate program. Get size to use when working with vectors
 	cout << "***Welcome to the HRR Engine tester!***\n"
@@ -60,14 +62,14 @@ int main (int argc, char** argv) {
 				// Get the name of the input file
 				cout << "Please input name of file to read from: ";
 				cin >> filename;
-				
+
 				// Open input filestream
 				fin.open( filename );
-			
+
 				// While there is more to read, read a concept and push it into concepts vector
 				while (fin >> temp){
 					concepts.push_back(temp);
-				}	
+				}
 
 				// Encode each string in concepts vector and store in a map
 				engine.encodeConcepts( concepts );
@@ -98,7 +100,22 @@ int main (int argc, char** argv) {
 			case '7':
 				engine.listAllConceptNames();
 				break;
+			case '8':
+				cout << "Input the name of the concept to unpack by name: ";
+				cin >> name;
+			 	unpackedConceptStrings = engine.unpack(name);
+				for (string concept : unpackedConceptStrings)
+					cout << ( concept == "" ? "LOL" : concept) << "\n";
+				break;
+			case '9':
+				cout << "Input the name of the concept to unpack by representation: ";
+				cin >> name;
+			 	unpackedConceptHrrs = engine.unpack(engine.query(name));
+				for (HRR concept : unpackedConceptHrrs)
+					cout << ( engine.query(concept) == "" ? "LOL" : engine.query(concept)) << "\n";
+				break;
 			case '0':
+				cout << "\nEXIT";
 				break;
 			default:
 				cout << "ERROR: Incorrect option entered\n";
@@ -122,6 +139,8 @@ void printMenu(){
 		 << "\t5 - Correlate two concepts\n"
 		 << "\t6 - Print all known concepts\n"
 		 << "\t7 - Print concepts names\n"
+		 << "\t8 - Unpack a concept by name\n"
+		 << "\t9 - Unpack a concept by representation\n"
 		 << "\t0 - Quit\n"
 		 << "INPUT: ";
 }
