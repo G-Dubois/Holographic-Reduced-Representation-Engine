@@ -349,71 +349,81 @@ string HRREngine::query(HRR hrr){
 	return match;
 }
 
-vector<string> HRREngine::unpack(string complexConcept){
+vector<string> HRREngine::unpack( string complexConcept ){
 	vector<string> conceptList;
 
-	unpackRecursive(complexConcept, conceptList);
-	sort(conceptList.begin(), conceptList.end());
+	unpackRecursive( complexConcept, conceptList );
+	sort( conceptList.begin(), conceptList.end() );
 
 	return conceptList;
 }
 
-string HRREngine::unpackRecursive(string complexConcept, vector<string>& conceptList){
+void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptList ){
 
 	// Get the list of base concepts in the complexConcept
-	vector<string> concepts = explode(complexConcept);
-	sort(concepts.begin(), concepts.end());
+	vector<string> concepts = explode( complexConcept );
 
-	string constructedConcept = "";
+    // Sort the concepts in lexicographical order
+	//sort( concepts.begin(), concepts.end() );
 
 	// Base case: if there is only one concept, return the representation for that concept
-	if (concepts.size() == 1) {
+	if ( concepts.size() == 1 ) {
+
+        // Check to see if the concept is in the concept list.
 		bool inList = false;
-		for (string conc : conceptList)
-			if (conc == concepts[0]) inList = true;
+		for ( string conc : conceptList ) {
+			if ( conc == concepts[0] ) inList = true;
+        }
 
-		if (!inList) conceptList.push_back(concepts[0]);
-
-		return concepts[0];
+        // If concept is not in the list, then add it to the list
+		if ( !inList ) {
+            conceptList.push_back( concepts[0] );
+        }
 	}
-	// Otherwise, iterate over the concepts, and construct a representation for each list of OTHER concepts
+	// If there is more than one concept, iterate over the concepts, and construct a
+    //  representation for each list of OTHER concepts
 	else {
 
-		// Iterate over each concept, constructing a list if it doesn't exist for each combination of OTHER concepts
-		for (int i = 0; i < concepts.size(); i++) {
+		// Iterate over each concept, constructing a list if it doesn't exist for each
+        //  combination of OTHER concepts
+		for ( int i = 0; i < concepts.size(); i++ ) {
 
+            // Create a new vector list that contains all the original concepts
 			vector<string> otherVec = concepts;
-			otherVec.erase(otherVec.begin() + i);
 
+            // Remove the current concept from the list, creating a list of other concepts
+			otherVec.erase( otherVec.begin() + i );
+
+            // Construct a name for the representation of other concepts
 			string otherConcepts = "";
-			for (int i = 0; i < otherVec.size(); i++){
-				otherConcepts += ( i < otherVec.size() - 1 ? otherVec[i] + "*" : otherVec[i] );
+			for ( string concept : otherVec ){
+				otherConcepts += ( concept == otherVec.back() ? concept : concept + "*" );
 			}
 
-			//cout << "Other Concepts: " << otherConcepts << "\n";
-
+            // Construct a name for the reresentation of the full
 			string conceptsName = "";
-			for (string concept : concepts)
+			for ( string concept : concepts ) {
 				conceptsName += ( concept == concepts.back() ? concept : concept + "*" );
+            }
 
-			string returnedConcepts = unpackRecursive(otherConcepts, conceptList);
+            // Call the unpack function recursively on the list of other concepts
+			unpackRecursive( otherConcepts, conceptList );
 
-			concepts = explode(string(concepts[i] + "*" + otherConcepts));
-			sort(concepts.begin(), concepts.end());
-
-			constructedConcept = "";
-			for (string conc : concepts) constructedConcept += ( conc == concepts.back() ? conc : conc + "*" );
-
+            // Check to see if the original complex concept is in the list
 			bool inList = false;
-			for (string conc : conceptList)
-				if (conc == constructedConcept) inList = true;
+			for ( string conc : conceptList ) {
+				if ( conc == complexConcept ) inList = true;
+            }
 
-			if (!inList) conceptList.push_back(constructedConcept);
+            // If the original complex concept is not in the list, then add it to the list
+			if (!inList) {
+                conceptList.push_back( complexConcept );
+            }
 
 		}
-	}
-	return constructedConcept;
+	};
 }
+
 
 vector<HRR> HRREngine::unpack(HRR complexConcept){
 
