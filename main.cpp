@@ -66,13 +66,10 @@ int main (int argc, char** argv) {
 				// Open input filestream
 				fin.open( filename );
 
-				// While there is more to read, read a concept and push it into concepts vector
+				// While there is more to read, read a concept and query the engine, adding it if it does not exists
 				while (fin >> temp){
-					concepts.push_back(temp);
+					engine.query(temp);
 				}
-
-				// Encode each string in concepts vector and store in a map
-				engine.encodeConcepts( concepts );
 				break;
 			case '4':
 				// Get the names of the two vectors to combine

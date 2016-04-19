@@ -418,9 +418,14 @@ string HRREngine::unpackRecursive(string complexConcept, vector<string>& concept
 vector<HRR> HRREngine::unpack(HRR complexConcept){
 
 	vector<HRR> conceptList;
+	vector<string> conceptNamesList = unpack( query(complexConcept) );
 
-	unpackRecursive(complexConcept, conceptList);
-	conceptList.push_back(complexConcept);
+	for (string s : conceptNamesList){
+		conceptList.push_back(findHRRByName(s));
+	}
+
+	//unpackRecursive(complexConcept, conceptList);
+	//conceptList.push_back(complexConcept);
 
 	return conceptList;
 }
@@ -432,20 +437,32 @@ void HRREngine::unpackRecursive(HRR complexConcept, vector<HRR>& conceptList) {
 
 	// Base Case: If there is only one name, then it is a base concept, add it to the list
 	if (names.size() == 1){
+		/*
 		bool found = false;
 		for (HRR concept : conceptList){
+			cout << "Concept1: " << query(concept) << "\nNames[0]: " << names[0] << "\n";
 			if (query(concept) == names[0]) found = true;
 		}
 		if (!found) conceptList.push_back(findHRRByName(names[0]));
+		*/
+
+		return;
 	} else {
 		for (string name : names){
 			HRR otherConcepts = correlateHRRs(complexConcept, query(name));
-			unpackRecursive(otherConcepts, conceptList);
+
 			bool found = false;
 			for (HRR concept : conceptList){
-				if (query(concept) == query(otherConcepts)) found = true;
+				cout << "concept: " << query(concept) << "\notherConcepts: " << query(otherConcepts) << "\n";
+				if (query(concept) == query(otherConcepts)){
+					found = true;
+					break;
+				}
 			}
-			if (!found) conceptList.push_back(otherConcepts);
+			if (!found){
+				unpackRecursive(otherConcepts, conceptList);
+				conceptList.push_back(otherConcepts);
+			}
 		}
 	}
 }
