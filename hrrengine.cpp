@@ -400,12 +400,6 @@ void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptL
 				otherConcepts += ( concept == otherVec.back() ? concept : concept + "*" );
 			}
 
-            // Construct a name for the reresentation of the full
-			string conceptsName = "";
-			for ( string concept : concepts ) {
-				conceptsName += ( concept == concepts.back() ? concept : concept + "*" );
-            }
-
             // Call the unpack function recursively on the list of other concepts
 			unpackRecursive( otherConcepts, conceptList );
 
