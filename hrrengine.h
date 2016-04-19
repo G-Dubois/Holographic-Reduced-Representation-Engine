@@ -125,7 +125,7 @@ public:
 	 *			  a complex concept.
 	 */
 	vector<string> unpack(string);
-	string unpackRecursive(string, vector<string>&);
+	void unpackRecursive(string, vector<string>&);
 
 	vector<HRR> unpack(HRR);
 	void unpackRecursive(HRR, vector<HRR>&);
