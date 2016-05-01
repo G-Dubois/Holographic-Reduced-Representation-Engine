@@ -32,19 +32,8 @@ HRR HRREngine::generateHRR() {
 	normal_distribution<double> dist(mean, stdDev);
 
 	// For each element in the vector, generate a new value from the distribution
-	//	Also add square of the value to the magnitude to use in normalizing the vector
-	double magnitude = 0;
 	for (double & element : myVec) {
 		element = dist(e2);
-		magnitude += element*element;
-	}
-
-	// Finish calculating magnitude by taking its square root
-	magnitude = sqrt( magnitude );
-
-	// Normalize the vector by dividing each element by the manitude of the vector
-	for (double & element : myVec){
-		element = element/magnitude;
 	}
 
 	return myVec;
@@ -53,27 +42,20 @@ HRR HRREngine::generateHRR() {
 // Outputs the contents of an hrr
 void HRREngine::printHRRVertical(HRR hrr) {
 	for (int i = 0; i < hrr.size(); i++) {
-		cout << "| " << setprecision(9) << setw(12) << hrr[i] << " |\n";
+		cout << "| " << setprecision(3) << setw(6) << hrr[i] << " |\n";
 	}
 }
 void HRREngine::printHRRHorizontal(HRR hrr){
 	cout << "[ ";
 	for (int i = 0; i < hrr.size() - 1; i++){
-		cout << setprecision(9) << setw(12) << fixed;
+		cout << setprecision(3) << setw(6) << fixed;
 		cout << hrr[i] << " , ";
 	}
-	cout << setprecision(9) << setw(12) << fixed << hrr[hrr.size() - 1] << setw(3) << " ]";
+	cout << setprecision(3) << setw(6) << fixed << hrr[hrr.size() - 1] << setw(3) << " ]";
 }
 
 // Combines two concepts to form a complex concept
 string HRREngine::combineConcepts(string concept1, string concept2){
-
-	// Get the HRRs for each concept
-	HRR hrr1 = query(concept1);
-	HRR hrr2 = query(concept2);
-
-	// Compute the convolution of the concept
-	HRR newHrr = convolveHRRs(hrr1, hrr2);
 
 	// Create the new name for the object (lexicographical order)
 	//	Break the name of the first concept into its constituent parts, and store in descriptors
@@ -95,8 +77,22 @@ string HRREngine::combineConcepts(string concept1, string concept2){
 		}
 	}
 
-	// Enter the new concept into concept memory
-	conceptMemory.insert(pair<string, HRR>(name, newHrr));
+	bool exists = false;
+	for ( pair<string, HRR> concept : conceptMemory ) {
+		if ( name == concept.first ) exists = true;
+	}
+
+	if (!exists){
+		// Get the HRRs for each concept
+		HRR hrr1 = query(concept1);
+		HRR hrr2 = query(concept2);
+
+		// Compute the convolution of the concept
+		HRR newHrr = convolveHRRs(hrr1, hrr2);
+
+		// Enter the new concept into concept memory
+		conceptMemory.insert(pair<string, HRR>(name, newHrr));
+	}
 
 	return name;
 }
@@ -173,14 +169,16 @@ HRR HRREngine::correlateHRRs(HRR complexHRR, HRR hrr) {
 
 
 // Get user-defined values for an hrr
-void HRREngine::getUserDefinedHRR(HRR& hrr){
+HRR HRREngine::getUserDefinedHRR(vector<double> values){
 
-	// Get continuous values for an HRR for each value
-	cout << "Please input each value for hrr. Values needed: " << hrr.size() <<"\nInput here: ";
-	for (int i = 0; i < hrr.size() ; i++){
-		cin >> hrr[i];
+	HRR hrr = {};
+
+	// Get values for an HRR for each value
+	for (double val : values){
+		hrr.push_back(val);
 	}
 
+	return hrr;
 }
 
 // Method takes a concept name as a string and generates an HRR for it, storing them in concept memory and returning the HRR
@@ -205,6 +203,13 @@ void HRREngine::encodeConcepts(vector<string> concepts){
 	}
 }
 
+void HRREngine::construct(string conceptName){
+	vector<string> concepts = explode(conceptName);
+	sort(concepts.begin(), concepts.end());
+
+	constructConcept(concepts);
+}
+
 // Method constructs a concept and all of its constituent concepts using a tree-like recursive algorithm
 HRR HRREngine::constructConcept(vector<string> concepts){
 
@@ -226,17 +231,6 @@ HRR HRREngine::constructConcept(vector<string> concepts){
 
 			vector<string> otherVec = concepts;
 			otherVec.erase(otherVec.begin() + i);
-
-			//cout << "Concepts:\n";
-			//cout << "\tconcepts[i] = " << concepts[i] << "\n";
-			/*for (string s : concepts){
-				cout << "\t" << s << "\n";
-			}
-
-			//cout << "Other Concepts\n";
-			for (string s : otherVec){
-				cout << "\t" << s << "\n";
-			}*/
 
 			string otherConcepts = "";
 			for (int i = 0; i < otherVec.size(); i++){
@@ -289,12 +283,9 @@ HRREngine::HRREngine(){
 HRR HRREngine::query(string name){
 
 	// Reorder the string
+	name = reorderNameLex(name);
+
 	vector<string> strings = explode(name);
-	name = "";
-	sort(strings.begin(), strings.end());
-	for (int i = 0; i < strings.size(); i++){
-		name += ( i < strings.size() - 1? strings[i] + "*" : strings[i]);
-	}
 
 	// See if a value exists for this concept in the map
 	//	For each concept in concept memory, check if the key matches the name of the concept we are looking for
@@ -332,7 +323,7 @@ string HRREngine::query(HRR hrr){
 		// Find the dot product of the queried hrr and the current hrr in the map
 		dotProduct = dot(hrr, concept.second);
 
-		//cout << "\nDot product of hrr and " << concept.first << ": " << dotProduct << "\n";
+		cout << "\nDot product of hrr and " << concept.first << ": " << dotProduct << "\n";
 
 		// If the dot product is the highest so far, then set the match to be the current representation in the map
 		if (dotProduct > threshold && dotProduct > bestMatch){
@@ -343,7 +334,6 @@ string HRREngine::query(HRR hrr){
 			// The new match is the name of the current concept
 			match = concept.first;
 		}
-
 	}
 
 	return match;
@@ -352,7 +342,7 @@ string HRREngine::query(HRR hrr){
 vector<string> HRREngine::unpack( string complexConcept ){
 	vector<string> conceptList;
 
-	unpackRecursive( complexConcept, conceptList );
+	unpackRecursive( reorderNameLex(complexConcept), conceptList );
 	sort( conceptList.begin(), conceptList.end() );
 
 	return conceptList;
@@ -360,11 +350,10 @@ vector<string> HRREngine::unpack( string complexConcept ){
 
 void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptList ){
 
+	complexConcept = reorderNameLex(complexConcept);
+
 	// Get the list of base concepts in the complexConcept
 	vector<string> concepts = explode( complexConcept );
-
-    // Sort the concepts in lexicographical order
-	//sort( concepts.begin(), concepts.end() );
 
 	// Base case: if there is only one concept, return the representation for that concept
 	if ( concepts.size() == 1 ) {
@@ -379,6 +368,15 @@ void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptL
 		if ( !inList ) {
             conceptList.push_back( concepts[0] );
         }
+
+		bool inMemory = false;
+		for ( pair<string, HRR> concept : conceptMemory ){
+			if ( concept.first == concepts[0] ) inMemory = false;
+		}
+
+		if ( !inMemory ) {
+			conceptMemory.insert( pair<string, HRR>( concepts[0], encodeConcept(concepts[0]) ) );
+		}
 	}
 	// If there is more than one concept, iterate over the concepts, and construct a
     //  representation for each list of OTHER concepts
@@ -392,6 +390,7 @@ void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptL
 			vector<string> otherVec = concepts;
 
             // Remove the current concept from the list, creating a list of other concepts
+			string currentConcept = *(otherVec.begin() + i);
 			otherVec.erase( otherVec.begin() + i );
 
             // Construct a name for the representation of other concepts
@@ -414,6 +413,16 @@ void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptL
                 conceptList.push_back( complexConcept );
             }
 
+			bool inMemory = false;
+			for ( pair<string, HRR> concept : conceptMemory ){
+				if ( concept.first == complexConcept ) inMemory = false;
+			}
+
+			if ( !inMemory ) {
+
+				conceptMemory.insert( pair<string, HRR>( complexConcept, convolveHRRs(findHRRByName(currentConcept),findHRRByName(otherConcepts) ) ) );
+			}
+
 		}
 	};
 }
@@ -428,48 +437,9 @@ vector<HRR> HRREngine::unpack(HRR complexConcept){
 		conceptList.push_back(findHRRByName(s));
 	}
 
-	//unpackRecursive(complexConcept, conceptList);
-	//conceptList.push_back(complexConcept);
-
 	return conceptList;
 }
 
-void HRREngine::unpackRecursive(HRR complexConcept, vector<HRR>& conceptList) {
-
-	// Get the list of concept names that comprise this concept
-	vector<string> names = explode(query(complexConcept));
-
-	// Base Case: If there is only one name, then it is a base concept, add it to the list
-	if (names.size() == 1){
-		/*
-		bool found = false;
-		for (HRR concept : conceptList){
-			cout << "Concept1: " << query(concept) << "\nNames[0]: " << names[0] << "\n";
-			if (query(concept) == names[0]) found = true;
-		}
-		if (!found) conceptList.push_back(findHRRByName(names[0]));
-		*/
-
-		return;
-	} else {
-		for (string name : names){
-			HRR otherConcepts = correlateHRRs(complexConcept, query(name));
-
-			bool found = false;
-			for (HRR concept : conceptList){
-				cout << "concept: " << query(concept) << "\notherConcepts: " << query(otherConcepts) << "\n";
-				if (query(concept) == query(otherConcepts)){
-					found = true;
-					break;
-				}
-			}
-			if (!found){
-				unpackRecursive(otherConcepts, conceptList);
-				conceptList.push_back(otherConcepts);
-			}
-		}
-	}
-}
 
 // Find hrr by name
 HRR HRREngine::findHRRByName(string name){
@@ -550,4 +520,16 @@ vector<string> HRREngine::explode(string str){
 	stringVector.push_back(str);
 
 	return stringVector;
+}
+
+string HRREngine::reorderNameLex(string complexConcept){
+	vector<string> conceptNames = explode(complexConcept);
+	sort(conceptNames.begin(), conceptNames.end());
+
+	string newName = "";
+	for ( int i = 0; i < conceptNames.size() - 1; i++ ) {
+		newName += conceptNames[i] + "*";
+	}
+	newName += conceptNames[conceptNames.size() - 1];
+	return newName;
 }

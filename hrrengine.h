@@ -1,3 +1,6 @@
+#ifndef HRR_ENGINE
+#define HRR_ENGINE
+
 //  Program:		Holographic Reduced Representation Engine Specification
 //  Filename:		hrrengine.h
 //  Author:			Grayson M. Dubois
@@ -48,6 +51,9 @@ private:
 	// Split a string into a vector of strigs using '*' as a delimiter
 	vector<string> explode(string str);
 
+	// Reorder the names of the complex concept in lexicographical order
+	string reorderNameLex(string complexConcept);
+
 public:
 
 	/**
@@ -92,13 +98,16 @@ public:
 
 	// Get user-defined values for an hrr
 	//  Used primarily for testing
-	void getUserDefinedHRR(HRR& hrr);
+	HRR getUserDefinedHRR(vector<double> values);
 
 	// Method takes a concept name as a string and generates an HRR for it, storing them in concept memory and returning the HRR
 	HRR encodeConcept(string name);
 
 	// Method takes a vector of strings and encodes them, assigning them an hrr and storing them in concept memory
 	void encodeConcepts(vector<string> concepts);
+
+	// Method construct takes the string name of a complex concept and generates encodings for all constituent concepts
+	void construct(string conceptName);
 
 	// Method constructs a concept and all of its constituent concepts using a tree-like recursive algorithm
 	HRR constructConcept(vector<string> concepts);
@@ -146,3 +155,5 @@ public:
 	// Compare two HRRs by taking their dot product and checking to see if the result is above a threshold
 	bool compare(HRR hrr1, HRR hrr2);
 };
+
+#endif	/* HRR_ENGINE */
