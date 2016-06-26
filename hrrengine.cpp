@@ -14,6 +14,24 @@
 
 using namespace std;
 
+// Default constructor. Sets vector size to 128
+HRREngine::HRREngine(){
+	this->vectorSize = 128;
+}
+
+// Initializing Constructor
+HRREngine::HRREngine(int vectorSize) {
+    this->vectorSize = vectorSize;
+}
+
+HRREngine& HRREngine::operator=(const HRREngine& rhs) {
+    this->conceptMemory = rhs.conceptMemory;
+    this->vectorSize = rhs.vectorSize;
+    this->threshold = rhs.threshold;
+
+    return *this;
+}
+
 // Generates an hrr representation for the given vector
 HRR HRREngine::generateHRR() {
 
@@ -60,8 +78,8 @@ string HRREngine::combineConcepts(string concept1, string concept2){
 	// Create the new name for the object (lexicographical order)
 	//	Break the name of the first concept into its constituent parts, and store in descriptors
 	//	Then, add each of the constituent parts of the second concept's name into descriptors
-	vector<string> descriptors = explode(concept1);
-	for (string str : explode(concept2) ){
+	vector<string> descriptors = explode(concept1, '*');
+	for (string str : explode(concept2, '*') ){
 		descriptors.push_back(str);
 	}
 
@@ -204,7 +222,7 @@ void HRREngine::encodeConcepts(vector<string> concepts){
 }
 
 void HRREngine::construct(string conceptName){
-	vector<string> concepts = explode(conceptName);
+	vector<string> concepts = explode(conceptName, '*');
 	sort(concepts.begin(), concepts.end());
 
 	constructConcept(concepts);
@@ -267,11 +285,6 @@ void HRREngine::setVectorSize(int size){
 	vectorSize = size;
 }
 
-// Default constructor. Sets vector size to 128
-HRREngine::HRREngine(){
-	vectorSize = 128;
-}
-
 /**
  *  Method query() is a critical method for the engine
  *		query() is overloaded to perform two functions, depending on its usage:
@@ -285,7 +298,7 @@ HRR HRREngine::query(string name){
 	// Reorder the string
 	name = reorderNameLex(name);
 
-	vector<string> strings = explode(name);
+	vector<string> strings = explode(name, '*');
 
 	// See if a value exists for this concept in the map
 	//	For each concept in concept memory, check if the key matches the name of the concept we are looking for
@@ -353,7 +366,7 @@ void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptL
 	complexConcept = reorderNameLex(complexConcept);
 
 	// Get the list of base concepts in the complexConcept
-	vector<string> concepts = explode( complexConcept );
+	vector<string> concepts = explode( complexConcept, '*' );
 
 	// Base case: if there is only one concept, return the representation for that concept
 	if ( concepts.size() == 1 ) {
@@ -505,9 +518,8 @@ float HRREngine::dot(HRR hrr1, HRR hrr2){
 }
 
 // Explode a string using '*' as a delimiter
-vector<string> HRREngine::explode(string str){
+vector<string> HRREngine::explode(string str, char delimiter){
 	vector<string> stringVector = vector<string>();
-	char delimiter = '*';
 
 	int pos = 0;
 	string token;
@@ -523,7 +535,7 @@ vector<string> HRREngine::explode(string str){
 }
 
 string HRREngine::reorderNameLex(string complexConcept){
-	vector<string> conceptNames = explode(complexConcept);
+	vector<string> conceptNames = explode(complexConcept, '*');
 	sort(conceptNames.begin(), conceptNames.end());
 
 	string newName = "";

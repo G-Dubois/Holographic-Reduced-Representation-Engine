@@ -45,12 +45,6 @@ private:
 	// Helper method invertVector calculates the approximate inversion of an HRR
 	HRR invertVector(HRR hrr);
 
-	// Calculate the dot product of two HRRs
-	float dot(HRR hrr1, HRR hrr2);
-
-	// Split a string into a vector of strigs using '*' as a delimiter
-	vector<string> explode(string str);
-
 	// Reorder the names of the complex concept in lexicographical order
 	string reorderNameLex(string complexConcept);
 
@@ -62,6 +56,14 @@ public:
 
 	// Default constructor
 	HRREngine();
+
+    // Initializing Constructor
+    HRREngine(int vectorSize);
+
+    // Copy-Constructor
+
+    // Assignment Operator
+    HRREngine& operator=(const HRREngine&);
 
 
 	/**
@@ -154,6 +156,12 @@ public:
 
 	// Compare two HRRs by taking their dot product and checking to see if the result is above a threshold
 	bool compare(HRR hrr1, HRR hrr2);
+
+	// Calculate the dot product of two HRRs
+	float dot(HRR hrr1, HRR hrr2);
+
+	// Split a string into a vector of strigs using the given delimiter
+	static vector<string> explode(string str, char delimiter);
 };
 
 #endif	/* HRR_ENGINE */
