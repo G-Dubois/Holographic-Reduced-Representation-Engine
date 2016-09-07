@@ -1,0 +1,6 @@
+{
+  "name": "Holographic Reduced Representation Engine",
+  "tagline": "A toolkit providing a library for encoding, decoding, and performing operations on holographic reduced representations.",
+  "body": "### An Engine to automate your usage of Holographic Reduced Representation\r\nI have designed this Holographic Reduced Representation Engine (HRRE) to generate and manipulate HRRs for you. You can use this engine to combine representations using circular convolution, as well as extract them using circular correlation.\r\n\r\n### Authors and Contributors\r\nAuthor: Grayson M. Dubois (@G-Dubois)\r\nMentor: Joshua L. Phillips (@jlphillipsphd)\r\n\r\n### Support or Contact\r\nHaving trouble with Pages? Check out our [documentation](https://help.github.com/pages) or [contact support](https://github.com/contact) and we’ll help you sort it out.\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
