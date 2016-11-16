@@ -10,6 +10,14 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+
+#include <gsl/gsl_fft_real.h>
+#include <gsl/gsl_fft_halfcomplex.h>
+#include <gsl/gsl_permutation.h>
+#include <gsl/gsl_permute_vector.h>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
+
 #include "hrrengine.h"
 
 using namespace std;
@@ -17,44 +25,70 @@ using namespace std;
 // Default constructor. Sets vector size to 128
 HRREngine::HRREngine(){
 	this->vectorSize = 128;
+	this->real = gsl_fft_real_wavetable_alloc(this->vectorSize);
+	this->hc = gsl_fft_halfcomplex_wavetable_alloc(this->vectorSize);
+
+	this->conceptMemory.insert(pair<string, HRR>("I", identity()));
 }
 
 // Initializing Constructor
 HRREngine::HRREngine(int vectorSize) {
     this->vectorSize = vectorSize;
+	this->real = gsl_fft_real_wavetable_alloc(this->vectorSize);
+	this->hc = gsl_fft_halfcomplex_wavetable_alloc(this->vectorSize);
+	this->work = gsl_fft_real_workspace_alloc(this->vectorSize);
+
+	this->conceptMemory.insert(pair<string, HRR>("I", identity()));
 }
 
 HRREngine& HRREngine::operator=(const HRREngine& rhs) {
-    this->conceptMemory = rhs.conceptMemory;
+
+	// Perform a deep copy of the concept memory
+	for (auto concept : rhs.conceptMemory) {
+		this->conceptMemory.insert(concept);
+	}
+
     this->vectorSize = rhs.vectorSize;
     this->threshold = rhs.threshold;
+
+	gsl_fft_real_wavetable_free(this->real);
+	gsl_fft_halfcomplex_wavetable_free(this->hc);
+	gsl_fft_real_workspace_free(this->work);
+
+	this->real = gsl_fft_real_wavetable_alloc(this->vectorSize);
+	this->hc = gsl_fft_halfcomplex_wavetable_alloc(this->vectorSize);
+	this->work = gsl_fft_real_workspace_alloc(this->vectorSize);
 
     return *this;
 }
 
-// Generates an hrr representation for the given vector
+// Generates a unitary hrr
 HRR HRREngine::generateHRR() {
-
-	// Create a vector of vectorSize
-	HRR myVec( vectorSize );
-
-	// Create a random number generator to generate numbers in a gaussian distribution
+	
+	gsl_complex a;
+	size_t i;
+	HRR hrr(vectorSize);
+	double* halfc = &(hrr[0]);
 	random_device rd;
 	mt19937 e2(rd());
+	uniform_real_distribution<double> dist(-M_PI, M_PI);
 
-	// Set up the mean and standard deviation
-	double mean = 0.0;
-	double stdDev = 1.0 / sqrt( vectorSize );
+	// Set first element
+	halfc[0] = 1.0;
 
-	// Generate a normal distribution to generate numbers from using the mean and stdDev
-	normal_distribution<double> dist(mean, stdDev);
-
-	// For each element in the vector, generate a new value from the distribution
-	for (double & element : myVec) {
-		element = dist(e2);
+	for (i = 1; i < vectorSize - i; i++) {
+		a = gsl_complex_polar(1.0, dist(e2));
+		halfc[2*i-1] = GSL_REAL(a);
+		halfc[2*i] = GSL_IMAG(a);
 	}
 
-	return myVec;
+	if (i == vectorSize - i) {
+		// Set middle element here
+		halfc[vectorSize - 1] = 1.0;
+	}
+
+	gsl_fft_halfcomplex_inverse(halfc, 1, vectorSize, hc, work);
+	return hrr;
 }
 
 // Outputs the contents of an hrr
@@ -117,43 +151,20 @@ string HRREngine::combineConcepts(string concept1, string concept2){
 
 // Forms a complex concept by performing circular convolution on two hrrs
 HRR HRREngine::convolveHRRs(HRR hrr1, HRR hrr2) {
-	HRR newConcept(hrr1.size());
+	HRR newHRR(hrr1.size());
 
 	if (hrr1.size() != hrr2.size()) {
 		// Notify user if attempted to convolve vectors of differing length
-		cout << "ERROR: Cannot convolve two hrrs of differing size!\n";
+		cerr << "ERROR: Cannot convolve two hrrs of differing size!\n";
 	} else {
-
-		// Form the outer product of hrr1 and hrr2
-		vector<vector<float>> outerProduct(hrr1.size());
-		for (int i = 0; i < outerProduct.size(); i++){
-			vector<float> newVector(hrr2.size());
-			outerProduct[i] = newVector;
-		}
-
-		// Create the outerProduct matrix
-		for (int i = 0; i < hrr1.size(); i ++) {
-			for (int j = 0; j < hrr2.size(); j++) {
-				outerProduct[i][j] = hrr1[i] * hrr2[j];
-			}
-		}
-
-		// Perform circular convolution
-		for (int j = 0; j < hrr1.size(); j++){
-			float sum = 0;
-			for (int i = j, k = 0; k <= j; i--, k++){
-				sum += hrr1[i] * hrr2[k];
-
-			}
-			for (int i = hrr2.size()-1, k = j+1; k <= hrr2.size()-1; i--, k++){
-				sum += hrr1[i] * hrr2[k];
-			}
-			newConcept[j] = sum;
-		}
-
+		// Convolve hrr1 and hrr2 into newHRR using fast fourier transform
+		gsl_fft_real_transform(&(hrr1[0]), 1, vectorSize, real, work);
+		gsl_fft_real_transform(&(hrr2[0]), 1, vectorSize, real, work);
+		multiplyComplex(&(hrr1[0]), &(hrr2[0]), &(newHRR[0]));
+		gsl_fft_halfcomplex_inverse(&(newHRR[0]), 1, vectorSize, hc, work);
 	}
 
-	return newConcept;
+	return newHRR;
 }
 
 // Extract a base concept from a complex concept and the former's complementary base concept
@@ -202,8 +213,9 @@ HRR HRREngine::getUserDefinedHRR(vector<double> values){
 // Method takes a concept name as a string and generates an HRR for it, storing them in concept memory and returning the HRR
 HRR HRREngine::encodeConcept(string name){
 
-	for (pair<string, HRR> concept : conceptMemory)
+	for (pair<string, HRR> concept : conceptMemory) {
 		if ( concept.first == name ) return concept.second;
+	}
 
 	// Generate a new HRR for the concept
 	HRR newHRR = generateHRR();
@@ -282,7 +294,15 @@ int HRREngine::getVectorSize(){
 
 // Sets the general length of the vector
 void HRREngine::setVectorSize(int size){
-	vectorSize = size;
+	this->vectorSize = size;
+	gsl_fft_real_wavetable_free(this->real);
+	gsl_fft_halfcomplex_wavetable_free(this->hc);
+	gsl_fft_real_workspace_free(this->work);
+	this->real = gsl_fft_real_wavetable_alloc(this->vectorSize);
+	this->hc = gsl_fft_halfcomplex_wavetable_alloc(this->vectorSize);
+	this->work = gsl_fft_real_workspace_alloc(this->vectorSize);
+
+	conceptMemory["I"] = identity();
 }
 
 /**
@@ -336,7 +356,7 @@ string HRREngine::query(HRR hrr){
 		// Find the dot product of the queried hrr and the current hrr in the map
 		dotProduct = dot(hrr, concept.second);
 
-		cout << "\nDot product of hrr and " << concept.first << ": " << dotProduct << "\n";
+		//cout << "\nDot product of hrr and " << concept.first << ": " << dotProduct << "\n";
 
 		// If the dot product is the highest so far, then set the match to be the current representation in the map
 		if (dotProduct > threshold && dotProduct > bestMatch){
@@ -459,6 +479,7 @@ HRR HRREngine::findHRRByName(string name){
 	for (pair<string, HRR> concept: conceptMemory)
 		if (concept.first == name) return concept.second;
 
+	//cerr << "No HRR found for concept: " << name << "\n";
 	vector<double> newVector;
 	return newVector;
 }
@@ -510,6 +531,12 @@ bool HRREngine::compare(HRR hrr1, HRR hrr2){
 
 // Calculate the dot product of two HRRs
 float HRREngine::dot(HRR hrr1, HRR hrr2){
+
+	if (hrr1.size() != hrr2.size()) {
+		cerr << "ERROR: Cannot perform dot operation on two vectors of differing size\n";
+		return 0.0;
+	}
+
 	float dotProduct = 0;
 	for (int i = 0; i < vectorSize; i++) {
 		dotProduct += hrr1[i] * hrr2[i];
@@ -544,4 +571,44 @@ string HRREngine::reorderNameLex(string complexConcept){
 	}
 	newName += conceptNames[conceptNames.size() - 1];
 	return newName;
+}
+
+// Construct an identity vector of given length
+HRR HRREngine::identity() {
+	HRR identity(vectorSize, 0.0);
+	identity[0] = 1.0;
+
+	return identity;
+}
+
+void HRREngine::multiplyComplex(double* half1, double* half2, double* result) {
+	gsl_complex a,b;
+	size_t i;
+
+	GSL_SET_REAL(&a, half1[0]);
+	GSL_SET_REAL(&b, half2[0]);
+	GSL_SET_IMAG(&a, 0.0);
+	GSL_SET_IMAG(&b, 0.0);
+
+	result[0] = GSL_REAL(gsl_complex_mul(a,b));
+
+	for (i = 1; i < vectorSize - i; i++) {
+		GSL_SET_REAL(&a, half1[2 * i - 1]);
+		GSL_SET_REAL(&b, half2[2 * i - 1]);
+		GSL_SET_IMAG(&a, half1[2 * i]);
+		GSL_SET_IMAG(&b, half2[2 * i]);
+
+		a = gsl_complex_mul(a,b);
+		result[2 * i -1] = GSL_REAL(a);
+		result[2 * i] = GSL_IMAG(a);
+	}
+
+	if (i == vectorSize - i) {
+		GSL_SET_REAL(&a, half1[vectorSize - 1]);
+		GSL_SET_REAL(&b, half2[vectorSize - 1]);
+		GSL_SET_IMAG(&a, 0.0);
+		GSL_SET_IMAG(&b, 0.0);
+
+		result[vectorSize - 1] = GSL_REAL(gsl_complex_mul(a,b));
+	}
 }

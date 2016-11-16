@@ -9,6 +9,10 @@
 #include <map>
 #include <vector>
 
+#include <gsl/gsl_fft_real.h>
+#include <gsl/gsl_fft_halfcomplex.h>
+#include <gsl/gsl_complex.h>
+
 using namespace std;
 
 typedef vector<double> HRR;
@@ -35,6 +39,7 @@ private:
 
  	// Generates an hrr representation for the given vector
  	HRR generateHRR();
+	HRR generateUnitaryHRR();
 
 	// Forms a complex concept by performing circular convolution on two hrrs
 	HRR convolveHRRs(HRR hrr1, HRR hrr2);
@@ -47,6 +52,15 @@ private:
 
 	// Reorder the names of the complex concept in lexicographical order
 	string reorderNameLex(string complexConcept);
+
+	// Construct identity vector
+	HRR identity();
+
+	// Functions for performing fast-fourier transform
+	gsl_fft_real_wavetable* real;
+	gsl_fft_halfcomplex_wavetable* hc;
+	gsl_fft_real_workspace* work;
+	void multiplyComplex(double* half1, double* half2, double* result);
 
 public:
 
@@ -129,11 +143,9 @@ public:
 
 	/**
 	 *	Method unpack() is a critical method for the engine
-	 *		unpack() is overloaded to perform two functions, depending on its usage:
-	 *			- Takes a string value as an arguemnt, gets a list of all combinations of all constituent concept
-	 *			  names of a complex concept.
-	 *			- Takes an HRR as an argument, gets a list of all combinations of all constituent HRR concepts in
-	 *			  a complex concept.
+	 *	unpack() is overloaded to perform two functions, depending on its usage:
+	 *		- Takes a string value as an arguemnt, gets a list of all combinations of all constituent concept  names of a complex concept.
+	 *		- Takes an HRR as an argument, gets a list of all combinations of all constituent HRR concepts in a complex concept.
 	 */
 	vector<string> unpack(string);
 	void unpackRecursive(string, vector<string>&);
