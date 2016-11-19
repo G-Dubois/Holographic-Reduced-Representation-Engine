@@ -461,6 +461,11 @@ void HRREngine::unpackRecursive( string complexConcept, vector<string>& conceptL
 }
 
 
+vector<string> HRREngine::unpackSimple(string concept) {
+	return explode(concept, '*');
+}
+
+
 vector<HRR> HRREngine::unpack(HRR complexConcept){
 
 	vector<HRR> conceptList;
@@ -474,12 +479,23 @@ vector<HRR> HRREngine::unpack(HRR complexConcept){
 }
 
 
+vector<HRR> HRREngine::unpackSimple(HRR complexConcept) {
+	vector<HRR> conceptList;
+	vector<string> conceptNamesList = explode( query(complexConcept), '*');
+
+	for (auto s : conceptNamesList) {
+		conceptList.push_back(findHRRByName(s));
+	}
+
+	return conceptList;
+}
+
+
 // Find hrr by name
 HRR HRREngine::findHRRByName(string name){
 	for (pair<string, HRR> concept: conceptMemory)
 		if (concept.first == name) return concept.second;
 
-	//cerr << "No HRR found for concept: " << name << "\n";
 	vector<double> newVector;
 	return newVector;
 }
